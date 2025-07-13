@@ -30,3 +30,8 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+/.idea/.gitignore
+/.idea/git_toolbox_blame.xml
+/.idea/modules.xml
+/.idea/PackManClaude.iml
+/.idea/vcs.xml
