@@ -7,7 +7,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
-const TileSize = 20
+const TileSize = 30
 
 type Game struct {
 	maze [][]int
@@ -28,7 +28,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return 640, 480
+	return 32 * TileSize, 17 * TileSize
 }
 
 func main() {
@@ -55,6 +55,7 @@ func main() {
 	}
 	
 	ebiten.SetWindowTitle("PackMan Game")
+	ebiten.SetWindowSize(32*TileSize, 17*TileSize)
 	if err := ebiten.RunGame(game); err != nil {
 		panic(err)
 	}
