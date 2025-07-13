@@ -8,7 +8,17 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
-const TileSize = 30
+const (
+	TileSize = 30
+	FrightenedDuration = 300 // フレーム数 (約5秒)
+)
+
+type GhostState int
+
+const (
+	Normal GhostState = iota
+	Frightened
+)
 
 type Player struct {
 	X     float64
@@ -71,14 +81,25 @@ func (p *Player) isColliding(x, y float64, maze [][]int) bool {
 }
 
 type Ghost struct {
-	X     float64
-	Y     float64
-	Speed float64
-	DirX  float64
-	DirY  float64
+	X               float64
+	Y               float64
+	Speed           float64
+	DirX            float64
+	DirY            float64
+	State           GhostState
+	FrightenedTimer int
+	InitialX        float64
+	InitialY        float64
 }
 
 func (g *Ghost) Update(maze [][]int) {
+	if g.State == Frightened {
+		g.FrightenedTimer--
+		if g.FrightenedTimer <= 0 {
+			g.State = Normal
+		}
+	}
+	
 	newX := g.X + g.DirX*g.Speed
 	newY := g.Y + g.DirY*g.Speed
 	
@@ -92,6 +113,18 @@ func (g *Ghost) Update(maze [][]int) {
 			g.chooseRandomDirection(maze)
 		}
 	}
+}
+
+func (g *Ghost) SetFrightened() {
+	g.State = Frightened
+	g.FrightenedTimer = FrightenedDuration
+}
+
+func (g *Ghost) ResetToInitialPosition() {
+	g.X = g.InitialX
+	g.Y = g.InitialY
+	g.State = Normal
+	g.FrightenedTimer = 0
 }
 
 func (g *Ghost) isColliding(x, y float64, maze [][]int) bool {
@@ -221,6 +254,7 @@ func (gs *GameScene) checkItemCollection() {
 		} else if gs.maze[tileY][tileX] == 3 {
 			gs.maze[tileY][tileX] = 0
 			gs.Score += 50
+			gs.ghost.SetFrightened()
 		}
 	}
 }
@@ -233,7 +267,17 @@ func (gs *GameScene) checkPlayerGhostCollision() bool {
 	dy := gs.player.Y - gs.ghost.Y
 	distance := dx*dx + dy*dy
 	
-	return distance < (playerRadius+ghostRadius)*(playerRadius+ghostRadius)
+	if distance < (playerRadius+ghostRadius)*(playerRadius+ghostRadius) {
+		if gs.ghost.State == Frightened {
+			gs.ghost.ResetToInitialPosition()
+			gs.Score += 200
+			return false
+		} else {
+			return true
+		}
+	}
+	
+	return false
 }
 
 func (gs *GameScene) Draw(screen *ebiten.Image) {
@@ -255,7 +299,14 @@ func (gs *GameScene) Draw(screen *ebiten.Image) {
 	}
 	
 	vector.DrawFilledCircle(screen, float32(gs.player.X), float32(gs.player.Y), TileSize/3, color.RGBA{R: 0xff, G: 0xff, B: 0, A: 0xff}, false)
-	vector.DrawFilledCircle(screen, float32(gs.ghost.X), float32(gs.ghost.Y), TileSize/3, color.RGBA{R: 255, G: 0, B: 0, A: 255}, false)
+	
+	var ghostColor color.RGBA
+	if gs.ghost.State == Frightened {
+		ghostColor = color.RGBA{R: 0, G: 0, B: 255, A: 255}
+	} else {
+		ghostColor = color.RGBA{R: 255, G: 0, B: 0, A: 255}
+	}
+	vector.DrawFilledCircle(screen, float32(gs.ghost.X), float32(gs.ghost.Y), TileSize/3, ghostColor, false)
 }
 
 type GameOverScene struct{}
@@ -407,11 +458,14 @@ func main() {
 			Speed: 2.0,
 		},
 		ghost: Ghost{
-			X:     TileSize*16 + TileSize/2,
-			Y:     TileSize*9 + TileSize/2,
-			Speed: 1.5,
-			DirX:  1.0,
-			DirY:  0.0,
+			X:        TileSize*16 + TileSize/2,
+			Y:        TileSize*9 + TileSize/2,
+			Speed:    1.5,
+			DirX:     1.0,
+			DirY:     0.0,
+			State:    Normal,
+			InitialX: TileSize*16 + TileSize/2,
+			InitialY: TileSize*9 + TileSize/2,
 		},
 	}
 	
