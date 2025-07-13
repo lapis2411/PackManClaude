@@ -207,26 +207,32 @@ func (g *Ghost) chooseDirection(maze [][]int, playerX, playerY float64) {
 	
 	if len(validDirections) > 0 {
 		var bestDirection []float64
-		bestDistance := float64(999999)
+		var bestDistance float64
+		
+		if g.State == Frightened {
+			bestDistance = -1
+		} else {
+			bestDistance = float64(999999)
+		}
 		
 		for _, dir := range validDirections {
 			nextX := g.X + dir[0]*TileSize
 			nextY := g.Y + dir[1]*TileSize
 			
-			var distance float64
-			if g.State == Frightened {
-				dx := nextX - playerX
-				dy := nextY - playerY
-				distance = -(dx*dx + dy*dy)
-			} else {
-				dx := nextX - playerX
-				dy := nextY - playerY
-				distance = dx*dx + dy*dy
-			}
+			dx := nextX - playerX
+			dy := nextY - playerY
+			distance := dx*dx + dy*dy
 			
-			if distance < bestDistance {
-				bestDistance = distance
-				bestDirection = dir
+			if g.State == Frightened {
+				if distance > bestDistance {
+					bestDistance = distance
+					bestDirection = dir
+				}
+			} else {
+				if distance < bestDistance {
+					bestDistance = distance
+					bestDirection = dir
+				}
 			}
 		}
 		
