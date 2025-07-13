@@ -202,6 +202,11 @@ func (gs *GameScene) Update() Scene {
 	gs.player.Update(gs.maze)
 	gs.ghost.Update(gs.maze)
 	gs.checkItemCollection()
+	
+	if gs.checkPlayerGhostCollision() {
+		return &GameOverScene{}
+	}
+	
 	return gs
 }
 
@@ -218,6 +223,17 @@ func (gs *GameScene) checkItemCollection() {
 			gs.Score += 50
 		}
 	}
+}
+
+func (gs *GameScene) checkPlayerGhostCollision() bool {
+	playerRadius := float64(TileSize) / 3
+	ghostRadius := float64(TileSize) / 3
+	
+	dx := gs.player.X - gs.ghost.X
+	dy := gs.player.Y - gs.ghost.Y
+	distance := dx*dx + dy*dy
+	
+	return distance < (playerRadius+ghostRadius)*(playerRadius+ghostRadius)
 }
 
 func (gs *GameScene) Draw(screen *ebiten.Image) {
@@ -249,6 +265,102 @@ func (gos *GameOverScene) Update() Scene {
 }
 
 func (gos *GameOverScene) Draw(screen *ebiten.Image) {
+	screen.Fill(color.RGBA{R: 0, G: 0, B: 0, A: 255})
+	
+	screenWidth := 32 * TileSize
+	screenHeight := 17 * TileSize
+	
+	centerX := float32(screenWidth / 2)
+	centerY := float32(screenHeight / 2)
+	
+	vector.DrawFilledRect(screen, centerX-150, centerY-40, 300, 80, color.RGBA{R: 255, G: 255, B: 255, A: 255}, false)
+	vector.DrawFilledRect(screen, centerX-145, centerY-35, 290, 70, color.RGBA{R: 255, G: 0, B: 0, A: 255}, false)
+	
+	vector.DrawFilledRect(screen, centerX-130, centerY-20, 260, 40, color.RGBA{R: 0, G: 0, B: 0, A: 255}, false)
+	
+	letters := [][]bool{
+		// G
+		{true, true, true, true, true},
+		{true, false, false, false, false},
+		{true, false, true, true, true},
+		{true, false, false, false, true},
+		{true, true, true, true, true},
+		
+		// A
+		{false, true, true, true, false},
+		{true, false, false, false, true},
+		{true, true, true, true, true},
+		{true, false, false, false, true},
+		{true, false, false, false, true},
+		
+		// M
+		{true, false, false, false, true},
+		{true, true, false, true, true},
+		{true, false, true, false, true},
+		{true, false, false, false, true},
+		{true, false, false, false, true},
+		
+		// E
+		{true, true, true, true, true},
+		{true, false, false, false, false},
+		{true, true, true, true, false},
+		{true, false, false, false, false},
+		{true, true, true, true, true},
+		
+		// (space)
+		{false, false, false, false, false},
+		{false, false, false, false, false},
+		{false, false, false, false, false},
+		{false, false, false, false, false},
+		{false, false, false, false, false},
+		
+		// O
+		{false, true, true, true, false},
+		{true, false, false, false, true},
+		{true, false, false, false, true},
+		{true, false, false, false, true},
+		{false, true, true, true, false},
+		
+		// V
+		{true, false, false, false, true},
+		{true, false, false, false, true},
+		{false, true, false, true, false},
+		{false, true, false, true, false},
+		{false, false, true, false, false},
+		
+		// E
+		{true, true, true, true, true},
+		{true, false, false, false, false},
+		{true, true, true, true, false},
+		{true, false, false, false, false},
+		{true, true, true, true, true},
+		
+		// R
+		{true, true, true, true, false},
+		{true, false, false, false, true},
+		{true, true, true, true, false},
+		{true, false, false, true, false},
+		{true, false, false, false, true},
+	}
+	
+	pixelSize := float32(3)
+	letterSpacing := float32(20)
+	startX := centerX - float32(9*int(letterSpacing))/2
+	
+	for letterIndex := 0; letterIndex < 9; letterIndex++ {
+		letterStartX := startX + float32(letterIndex)*letterSpacing
+		
+		for row := 0; row < 5; row++ {
+			for col := 0; col < 5; col++ {
+				letterArrayIndex := letterIndex * 5 + row
+				if letterArrayIndex < len(letters) && col < len(letters[letterArrayIndex]) && letters[letterArrayIndex][col] {
+					x := letterStartX + float32(col)*pixelSize
+					y := centerY - 10 + float32(row)*pixelSize
+					vector.DrawFilledRect(screen, x, y, pixelSize, pixelSize, color.RGBA{R: 255, G: 255, B: 255, A: 255}, false)
+				}
+			}
+		}
+	}
 }
 
 type Game struct {
