@@ -186,37 +186,42 @@ func abs(x float64) float64 {
 	return x
 }
 
-type Game struct {
+type Scene interface {
+	Update() Scene
+	Draw(screen *ebiten.Image)
+}
+
+type GameScene struct {
 	maze   [][]int
 	player Player
 	ghost  Ghost
 	Score  int
 }
 
-func (g *Game) Update() error {
-	g.player.Update(g.maze)
-	g.ghost.Update(g.maze)
-	g.checkItemCollection()
-	return nil
+func (gs *GameScene) Update() Scene {
+	gs.player.Update(gs.maze)
+	gs.ghost.Update(gs.maze)
+	gs.checkItemCollection()
+	return gs
 }
 
-func (g *Game) checkItemCollection() {
-	tileX := int(g.player.X / TileSize)
-	tileY := int(g.player.Y / TileSize)
+func (gs *GameScene) checkItemCollection() {
+	tileX := int(gs.player.X / TileSize)
+	tileY := int(gs.player.Y / TileSize)
 	
-	if tileY >= 0 && tileY < len(g.maze) && tileX >= 0 && tileX < len(g.maze[0]) {
-		if g.maze[tileY][tileX] == 2 {
-			g.maze[tileY][tileX] = 0
-			g.Score += 10
-		} else if g.maze[tileY][tileX] == 3 {
-			g.maze[tileY][tileX] = 0
-			g.Score += 50
+	if tileY >= 0 && tileY < len(gs.maze) && tileX >= 0 && tileX < len(gs.maze[0]) {
+		if gs.maze[tileY][tileX] == 2 {
+			gs.maze[tileY][tileX] = 0
+			gs.Score += 10
+		} else if gs.maze[tileY][tileX] == 3 {
+			gs.maze[tileY][tileX] = 0
+			gs.Score += 50
 		}
 	}
 }
 
-func (g *Game) Draw(screen *ebiten.Image) {
-	for y, row := range g.maze {
+func (gs *GameScene) Draw(screen *ebiten.Image) {
+	for y, row := range gs.maze {
 		for x, tile := range row {
 			switch tile {
 			case 1:
@@ -233,8 +238,30 @@ func (g *Game) Draw(screen *ebiten.Image) {
 		}
 	}
 	
-	vector.DrawFilledCircle(screen, float32(g.player.X), float32(g.player.Y), TileSize/3, color.RGBA{R: 0xff, G: 0xff, B: 0, A: 0xff}, false)
-	vector.DrawFilledCircle(screen, float32(g.ghost.X), float32(g.ghost.Y), TileSize/3, color.RGBA{R: 255, G: 0, B: 0, A: 255}, false)
+	vector.DrawFilledCircle(screen, float32(gs.player.X), float32(gs.player.Y), TileSize/3, color.RGBA{R: 0xff, G: 0xff, B: 0, A: 0xff}, false)
+	vector.DrawFilledCircle(screen, float32(gs.ghost.X), float32(gs.ghost.Y), TileSize/3, color.RGBA{R: 255, G: 0, B: 0, A: 255}, false)
+}
+
+type GameOverScene struct{}
+
+func (gos *GameOverScene) Update() Scene {
+	return gos
+}
+
+func (gos *GameOverScene) Draw(screen *ebiten.Image) {
+}
+
+type Game struct {
+	currentScene Scene
+}
+
+func (g *Game) Update() error {
+	g.currentScene = g.currentScene.Update()
+	return nil
+}
+
+func (g *Game) Draw(screen *ebiten.Image) {
+	g.currentScene.Draw(screen)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
@@ -242,7 +269,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 func main() {
-	game := &Game{
+	gameScene := &GameScene{
 		maze: [][]int{
 			{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 			{1, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 1},
@@ -274,6 +301,10 @@ func main() {
 			DirX:  1.0,
 			DirY:  0.0,
 		},
+	}
+	
+	game := &Game{
+		currentScene: gameScene,
 	}
 	
 	ebiten.SetWindowTitle("PackMan Game")
