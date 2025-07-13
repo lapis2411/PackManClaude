@@ -92,7 +92,7 @@ type Ghost struct {
 	InitialY        float64
 }
 
-func (g *Ghost) Update(maze [][]int) {
+func (g *Ghost) Update(maze [][]int, playerX, playerY float64) {
 	if g.State == Frightened {
 		g.FrightenedTimer--
 		if g.FrightenedTimer <= 0 {
@@ -104,13 +104,13 @@ func (g *Ghost) Update(maze [][]int) {
 	newY := g.Y + g.DirY*g.Speed
 	
 	if g.isColliding(newX, newY, maze) {
-		g.chooseRandomDirection(maze)
+		g.chooseDirection(maze, playerX, playerY)
 	} else {
 		g.X = newX
 		g.Y = newY
 		
 		if g.isAtIntersection(maze) {
-			g.chooseRandomDirection(maze)
+			g.chooseDirection(maze, playerX, playerY)
 		}
 	}
 }
@@ -185,7 +185,7 @@ func (g *Ghost) isAtIntersection(maze [][]int) bool {
 	return false
 }
 
-func (g *Ghost) chooseRandomDirection(maze [][]int) {
+func (g *Ghost) chooseDirection(maze [][]int, playerX, playerY float64) {
 	tileX := int(g.X / TileSize)
 	tileY := int(g.Y / TileSize)
 	
@@ -206,9 +206,38 @@ func (g *Ghost) chooseRandomDirection(maze [][]int) {
 	}
 	
 	if len(validDirections) > 0 {
-		chosen := validDirections[rand.Intn(len(validDirections))]
-		g.DirX = chosen[0]
-		g.DirY = chosen[1]
+		var bestDirection []float64
+		bestDistance := float64(999999)
+		
+		for _, dir := range validDirections {
+			nextX := g.X + dir[0]*TileSize
+			nextY := g.Y + dir[1]*TileSize
+			
+			var distance float64
+			if g.State == Frightened {
+				dx := nextX - playerX
+				dy := nextY - playerY
+				distance = -(dx*dx + dy*dy)
+			} else {
+				dx := nextX - playerX
+				dy := nextY - playerY
+				distance = dx*dx + dy*dy
+			}
+			
+			if distance < bestDistance {
+				bestDistance = distance
+				bestDirection = dir
+			}
+		}
+		
+		if bestDirection != nil {
+			g.DirX = bestDirection[0]
+			g.DirY = bestDirection[1]
+		} else {
+			chosen := validDirections[rand.Intn(len(validDirections))]
+			g.DirX = chosen[0]
+			g.DirY = chosen[1]
+		}
 	}
 }
 
@@ -233,7 +262,7 @@ type GameScene struct {
 
 func (gs *GameScene) Update() Scene {
 	gs.player.Update(gs.maze)
-	gs.ghost.Update(gs.maze)
+	gs.ghost.Update(gs.maze, gs.player.X, gs.player.Y)
 	gs.checkItemCollection()
 	
 	if gs.checkPlayerGhostCollision() {
