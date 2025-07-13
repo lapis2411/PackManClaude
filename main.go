@@ -518,8 +518,8 @@ func (gos *GameOverScene) Update() Scene {
 func (gos *GameOverScene) Draw(screen *ebiten.Image) {
 	screen.Fill(color.RGBA{R: 0, G: 0, B: 0, A: 255})
 	
-	screenWidth := 32 * TileSize
-	screenHeight := 17 * TileSize
+	screenWidth := 16 * TileSize
+	screenHeight := 10 * TileSize
 	
 	centerX := float32(screenWidth / 2)
 	centerY := float32(screenHeight / 2)
@@ -623,8 +623,8 @@ func (scs *StageClearScene) Update() Scene {
 func (scs *StageClearScene) Draw(screen *ebiten.Image) {
 	screen.Fill(color.RGBA{R: 0, G: 0, B: 0, A: 255})
 	
-	screenWidth := 32 * TileSize
-	screenHeight := 17 * TileSize
+	screenWidth := 16 * TileSize
+	screenHeight := 10 * TileSize
 	
 	centerX := float32(screenWidth / 2)
 	centerY := float32(screenHeight / 2)
@@ -745,29 +745,22 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return 32 * TileSize, 17 * TileSize
+	return 16 * TileSize, 10 * TileSize
 }
 
 func main() {
 	gameScene := &GameScene{
 		maze: [][]int{
-			{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-			{1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
-			{1, 2, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 2, 1},
-			{1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
-			{1, 2, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2, 1, 1},
-			{1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 1},
-			{1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1},
-			{1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
-			{1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1},
-			{1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
-			{1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1},
-			{1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
-			{1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1},
-			{1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
-			{1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1},
-			{1, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 1},
-			{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+			{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+			{1, 2, 2, 2, 2, 2, 3, 2, 2, 3, 2, 2, 2, 2, 2, 1},
+			{1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 2, 1},
+			{1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
+			{1, 2, 1, 2, 1, 1, 0, 0, 0, 0, 1, 1, 2, 1, 2, 1},
+			{1, 2, 2, 2, 2, 2, 0, 0, 0, 0, 2, 2, 2, 2, 2, 1},
+			{1, 2, 1, 2, 1, 1, 0, 0, 0, 0, 1, 1, 2, 1, 2, 1},
+			{1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1},
+			{1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 2, 1},
+			{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 		},
 		player: Player{
 			X:     TileSize + TileSize/2,
@@ -775,15 +768,15 @@ func main() {
 			Speed: 2.0,
 		},
 		ghost: Ghost{
-			X:               TileSize*16 + TileSize/2,
-			Y:               TileSize*9 + TileSize/2,
+			X:               TileSize*8 + TileSize/2,
+			Y:               TileSize*5 + TileSize/2,
 			Speed:           1.5,
 			DirX:            1.0,
 			DirY:            0.0,
 			State:           Normal,
 			FrightenedTimer: 0,
-			InitialX:        TileSize*16 + TileSize/2,
-			InitialY:        TileSize*9 + TileSize/2,
+			InitialX:        TileSize*8 + TileSize/2,
+			InitialY:        TileSize*5 + TileSize/2,
 		},
 	}
 	
@@ -792,7 +785,7 @@ func main() {
 	}
 	
 	ebiten.SetWindowTitle("PackMan Game")
-	ebiten.SetWindowSize(32*TileSize, 17*TileSize)
+	ebiten.SetWindowSize(16*TileSize, 10*TileSize)
 	if err := ebiten.RunGame(game); err != nil {
 		panic(err)
 	}
