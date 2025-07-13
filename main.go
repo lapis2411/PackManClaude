@@ -16,8 +16,8 @@ const (
 type GhostState int
 
 const (
-	Normal GhostState = iota
-	Frightened
+	Normal GhostState = 0
+	Frightened GhostState = 1
 )
 
 type Player struct {
@@ -493,14 +493,15 @@ func main() {
 			Speed: 2.0,
 		},
 		ghost: Ghost{
-			X:        TileSize*16 + TileSize/2,
-			Y:        TileSize*9 + TileSize/2,
-			Speed:    1.5,
-			DirX:     1.0,
-			DirY:     0.0,
-			State:    Normal,
-			InitialX: TileSize*16 + TileSize/2,
-			InitialY: TileSize*9 + TileSize/2,
+			X:               TileSize*16 + TileSize/2,
+			Y:               TileSize*9 + TileSize/2,
+			Speed:           1.5,
+			DirX:            1.0,
+			DirY:            0.0,
+			State:           Normal,
+			FrightenedTimer: 0,
+			InitialX:        TileSize*16 + TileSize/2,
+			InitialY:        TileSize*9 + TileSize/2,
 		},
 	}
 	
