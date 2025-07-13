@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"image/color"
 	"math/rand"
 
@@ -275,6 +276,10 @@ func (gs *GameScene) Update() Scene {
 		return &GameOverScene{}
 	}
 	
+	if gs.checkStageClear() {
+		return &StageClearScene{}
+	}
+	
 	return gs
 }
 
@@ -315,6 +320,17 @@ func (gs *GameScene) checkPlayerGhostCollision() bool {
 	return false
 }
 
+func (gs *GameScene) checkStageClear() bool {
+	for _, row := range gs.maze {
+		for _, tile := range row {
+			if tile == 2 || tile == 3 {
+				return false
+			}
+		}
+	}
+	return true
+}
+
 func (gs *GameScene) Draw(screen *ebiten.Image) {
 	for y, row := range gs.maze {
 		for x, tile := range row {
@@ -342,6 +358,155 @@ func (gs *GameScene) Draw(screen *ebiten.Image) {
 		ghostColor = color.RGBA{R: 255, G: 0, B: 0, A: 255}
 	}
 	vector.DrawFilledCircle(screen, float32(gs.ghost.X), float32(gs.ghost.Y), TileSize/3, ghostColor, false)
+	
+	gs.drawScore(screen)
+}
+
+func (gs *GameScene) drawScore(screen *ebiten.Image) {
+	scoreText := fmt.Sprintf("SCORE: %d", gs.Score)
+	
+	pixelSize := float32(2)
+	letterSpacing := float32(12)
+	startX := float32(10)
+	startY := float32(10)
+	
+	letterPatterns := map[rune][][]bool{
+		'S': {
+			{false, true, true, true, false},
+			{true, false, false, false, false},
+			{false, true, true, true, false},
+			{false, false, false, false, true},
+			{true, true, true, true, false},
+		},
+		'C': {
+			{false, true, true, true, false},
+			{true, false, false, false, false},
+			{true, false, false, false, false},
+			{true, false, false, false, false},
+			{false, true, true, true, false},
+		},
+		'O': {
+			{false, true, true, true, false},
+			{true, false, false, false, true},
+			{true, false, false, false, true},
+			{true, false, false, false, true},
+			{false, true, true, true, false},
+		},
+		'R': {
+			{true, true, true, true, false},
+			{true, false, false, false, true},
+			{true, true, true, true, false},
+			{true, false, false, true, false},
+			{true, false, false, false, true},
+		},
+		'E': {
+			{true, true, true, true, true},
+			{true, false, false, false, false},
+			{true, true, true, true, false},
+			{true, false, false, false, false},
+			{true, true, true, true, true},
+		},
+		':': {
+			{false, false, false, false, false},
+			{false, true, false, false, false},
+			{false, false, false, false, false},
+			{false, true, false, false, false},
+			{false, false, false, false, false},
+		},
+		' ': {
+			{false, false, false, false, false},
+			{false, false, false, false, false},
+			{false, false, false, false, false},
+			{false, false, false, false, false},
+			{false, false, false, false, false},
+		},
+		'0': {
+			{false, true, true, true, false},
+			{true, false, false, false, true},
+			{true, false, false, false, true},
+			{true, false, false, false, true},
+			{false, true, true, true, false},
+		},
+		'1': {
+			{false, false, true, false, false},
+			{false, true, true, false, false},
+			{false, false, true, false, false},
+			{false, false, true, false, false},
+			{false, true, true, true, false},
+		},
+		'2': {
+			{false, true, true, true, false},
+			{false, false, false, false, true},
+			{false, true, true, true, false},
+			{true, false, false, false, false},
+			{true, true, true, true, true},
+		},
+		'3': {
+			{true, true, true, true, false},
+			{false, false, false, false, true},
+			{false, true, true, true, false},
+			{false, false, false, false, true},
+			{true, true, true, true, false},
+		},
+		'4': {
+			{true, false, false, false, true},
+			{true, false, false, false, true},
+			{true, true, true, true, true},
+			{false, false, false, false, true},
+			{false, false, false, false, true},
+		},
+		'5': {
+			{true, true, true, true, true},
+			{true, false, false, false, false},
+			{true, true, true, true, false},
+			{false, false, false, false, true},
+			{true, true, true, true, false},
+		},
+		'6': {
+			{false, true, true, true, false},
+			{true, false, false, false, false},
+			{true, true, true, true, false},
+			{true, false, false, false, true},
+			{false, true, true, true, false},
+		},
+		'7': {
+			{true, true, true, true, true},
+			{false, false, false, false, true},
+			{false, false, false, true, false},
+			{false, false, true, false, false},
+			{false, true, false, false, false},
+		},
+		'8': {
+			{false, true, true, true, false},
+			{true, false, false, false, true},
+			{false, true, true, true, false},
+			{true, false, false, false, true},
+			{false, true, true, true, false},
+		},
+		'9': {
+			{false, true, true, true, false},
+			{true, false, false, false, true},
+			{false, true, true, true, true},
+			{false, false, false, false, true},
+			{false, true, true, true, false},
+		},
+	}
+	
+	for i, char := range scoreText {
+		if pattern, exists := letterPatterns[char]; exists {
+			letterStartX := startX + float32(i)*letterSpacing
+			
+			for row := 0; row < 5; row++ {
+				for col := 0; col < 5; col++ {
+					if pattern[row][col] {
+						x := letterStartX + float32(col)*pixelSize
+						y := startY + float32(row)*pixelSize
+						vector.DrawFilledRect(screen, x, y, pixelSize, pixelSize, color.RGBA{R: 255, G: 255, B: 255, A: 255}, false)
+					}
+				}
+			}
+		}
+	}
 }
 
 type GameOverScene struct{}
@@ -434,6 +599,123 @@ func (gos *GameOverScene) Draw(screen *ebiten.Image) {
 	startX := centerX - float32(9*int(letterSpacing))/2
 	
 	for letterIndex := 0; letterIndex < 9; letterIndex++ {
+		letterStartX := startX + float32(letterIndex)*letterSpacing
+		
+		for row := 0; row < 5; row++ {
+			for col := 0; col < 5; col++ {
+				letterArrayIndex := letterIndex * 5 + row
+				if letterArrayIndex < len(letters) && col < len(letters[letterArrayIndex]) && letters[letterArrayIndex][col] {
+					x := letterStartX + float32(col)*pixelSize
+					y := centerY - 10 + float32(row)*pixelSize
+					vector.DrawFilledRect(screen, x, y, pixelSize, pixelSize, color.RGBA{R: 255, G: 255, B: 255, A: 255}, false)
+				}
+			}
+		}
+	}
+}
+
+type StageClearScene struct{}
+
+func (scs *StageClearScene) Update() Scene {
+	return scs
+}
+
+func (scs *StageClearScene) Draw(screen *ebiten.Image) {
+	screen.Fill(color.RGBA{R: 0, G: 0, B: 0, A: 255})
+	
+	screenWidth := 32 * TileSize
+	screenHeight := 17 * TileSize
+	
+	centerX := float32(screenWidth / 2)
+	centerY := float32(screenHeight / 2)
+	
+	vector.DrawFilledRect(screen, centerX-180, centerY-40, 360, 80, color.RGBA{R: 0, G: 255, B: 0, A: 255}, false)
+	vector.DrawFilledRect(screen, centerX-175, centerY-35, 350, 70, color.RGBA{R: 0, G: 0, B: 0, A: 255}, false)
+	
+	letters := [][]bool{
+		// S
+		{true, true, true, true, true},
+		{true, false, false, false, false},
+		{true, true, true, true, false},
+		{false, false, false, false, true},
+		{true, true, true, true, true},
+		
+		// T
+		{true, true, true, true, true},
+		{false, false, true, false, false},
+		{false, false, true, false, false},
+		{false, false, true, false, false},
+		{false, false, true, false, false},
+		
+		// A
+		{false, true, true, true, false},
+		{true, false, false, false, true},
+		{true, true, true, true, true},
+		{true, false, false, false, true},
+		{true, false, false, false, true},
+		
+		// G
+		{true, true, true, true, true},
+		{true, false, false, false, false},
+		{true, false, true, true, true},
+		{true, false, false, false, true},
+		{true, true, true, true, true},
+		
+		// E
+		{true, true, true, true, true},
+		{true, false, false, false, false},
+		{true, true, true, true, false},
+		{true, false, false, false, false},
+		{true, true, true, true, true},
+		
+		// (space)
+		{false, false, false, false, false},
+		{false, false, false, false, false},
+		{false, false, false, false, false},
+		{false, false, false, false, false},
+		{false, false, false, false, false},
+		
+		// C
+		{false, true, true, true, false},
+		{true, false, false, false, false},
+		{true, false, false, false, false},
+		{true, false, false, false, false},
+		{false, true, true, true, false},
+		
+		// L
+		{true, false, false, false, false},
+		{true, false, false, false, false},
+		{true, false, false, false, false},
+		{true, false, false, false, false},
+		{true, true, true, true, true},
+		
+		// E
+		{true, true, true, true, true},
+		{true, false, false, false, false},
+		{true, true, true, true, false},
+		{true, false, false, false, false},
+		{true, true, true, true, true},
+		
+		// A
+		{false, true, true, true, false},
+		{true, false, false, false, true},
+		{true, true, true, true, true},
+		{true, false, false, false, true},
+		{true, false, false, false, true},
+		
+		// R
+		{true, true, true, true, false},
+		{true, false, false, false, true},
+		{true, true, true, true, false},
+		{true, false, false, true, false},
+		{true, false, false, false, true},
+	}
+	
+	pixelSize := float32(3)
+	letterSpacing := float32(18)
+	startX := centerX - float32(11*int(letterSpacing))/2
+	
+	for letterIndex := 0; letterIndex < 11; letterIndex++ {
 		letterStartX := startX + float32(letterIndex)*letterSpacing
 		
 		for row := 0; row < 5; row++ {
